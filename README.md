@@ -6,7 +6,7 @@ profit — and if not, where exactly does it break down?**
 
 🔗 **[Live Interactive Dashboard](https://USERNAME.github.io/global-superstore-analysis/dashboard/)** *(built with Plotly.js)*
 
-![Dashboard Preview](images/dashboard.png)
+![Dashboard Preview](visualizations/dashboard.png)
 
 ## Business Problem
 
@@ -23,8 +23,8 @@ segments are genuinely profitable versus which ones are losing money despite hea
 
 ## Visual Highlights
 
-![Discount vs Profit](images/discount_vs_profit.png)
-![Profit Margin by Market](images/margin_by_market.png)
+![Discount vs Profit](visualizations/discount_vs_profit.png)
+![Profit Margin by Market](visualizations/margin_by_market.png)
 
 ## Key Insights
 
