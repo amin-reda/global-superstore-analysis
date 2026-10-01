@@ -4,7 +4,7 @@ A complete end-to-end data analysis project on the Global Superstore dataset (~5
 built to answer one central business question: **does sales volume actually translate into
 profit — and if not, where exactly does it break down?**
 
-🔗 **[Live Interactive Dashboard](https://USERNAME.github.io/global-superstore-analysis/dashboard/)** *(built with Plotly.js)*
+🔗 **[Live Interactive Dashboard](https://USERNAME.github.io/global-superstore-analysis/Dashboard/dashboard.html)** *(built with Plotly.js)*
 
 ![Dashboard Preview](visualizations/dashboard.png)
 
