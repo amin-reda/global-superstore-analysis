@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Global Superstore — Profitability Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.32.0/plotly.min.js"></script>
+<style>
+  :root {
+    --bg: #F7F8FC;
+    --card-bg: #FFFFFF;
+    --navy: #1E2761;
+    --ice: #7C93C9;
+    --red: #D62728;
+    --green: #2CA096;
+    --amber: #D89614;
+    --gray: #5A5F73;
+    --border: #E5E5EC;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12142B; --card-bg: #1B1E3D; --navy: #CADCFC; --ice: #7C93C9;
+      --gray: #A9ADC4; --border: #2C3060;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12142B; --card-bg: #1B1E3D; --navy: #CADCFC; --ice: #7C93C9;
+    --gray: #A9ADC4; --border: #2C3060;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--navy);
+    font-family: Calibri, "Segoe UI", Arial, sans-serif;
+    min-height: 100%;
+  }
+  header {
+    padding: 28px clamp(16px, 4vw, 48px) 18px;
+    background: var(--navy);
+  }
+  @media (prefers-color-scheme: dark) { header { background: #0D0F24; } }
+  :root[data-theme="dark"] header { background: #0D0F24; }
+  header h1 { margin: 0 0 4px; font-size: clamp(20px, 3vw, 28px); color: #FFFFFF; }
+  header p { margin: 0; color: var(--ice); font-size: 13px; letter-spacing: 0.5px; }
+
+  main { padding: clamp(16px, 3vw, 32px); max-width: 1400px; margin: 0 auto; }
+
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px; margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; text-align: center;
+  }
+  .kpi-card .num { font-size: clamp(20px, 2.4vw, 28px); font-weight: 700; color: var(--navy); }
+  .kpi-card .label { font-size: 11.5px; color: var(--gray); margin-top: 4px; }
+  .kpi-card.alert { background: var(--red); }
+  .kpi-card.alert .num, .kpi-card.alert .label { color: #FFFFFF; }
+
+  .charts-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+  }
+  @media (max-width: 820px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 8px 4px; overflow-x: auto;
+  }
+  .chart-card h3 {
+    margin: 4px 12px 2px; font-size: 14px; color: var(--navy);
+  }
+  .chart-card .note { margin: 0 12px 6px; font-size: 11.5px; color: var(--gray); }
+  .full { grid-column: 1 / -1; }
+
+  footer {
+    text-align: center; padding: 24px 16px 32px; font-size: 11.5px; color: var(--gray);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Global Superstore — Profitability Dashboard</h1>
+  <p>51,290 ORDERS &nbsp;•&nbsp; 2011–2014 &nbsp;•&nbsp; DISCOUNT-DRIVEN PROFITABILITY ANALYSIS</p>
+</header>
+
+<main>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="num">$12.6M</div><div class="label">Total Revenue</div></div>
+    <div class="kpi-card"><div class="num">$1.47M</div><div class="label">Total Profit</div></div>
+    <div class="kpi-card"><div class="num">11.6%</div><div class="label">Overall Margin</div></div>
+    <div class="kpi-card"><div class="num">$505</div><div class="label">Avg Order Value</div></div>
+    <div class="kpi-card"><div class="num">23.9%</div><div class="label">Sales CAGR</div></div>
+    <div class="kpi-card alert"><div class="num">-$815K</div><div class="label">Lost to &gt;20% Discounts</div></div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Avg Profit per Order by Discount Range</h3>
+      <p class="note">Profitability turns negative beyond ~20% discount</p>
+      <div id="chart-discount" style="height:320px;"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Sales &amp; Profit Growth (2011–2014)</h3>
+      <p class="note">Growth is healthy — margin stays stable over time</p>
+      <div id="chart-trend" style="height:320px;"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Profit Margin by Category</h3>
+      <p class="note">Furniture lags well behind Office Supplies &amp; Technology</p>
+      <div id="chart-category" style="height:280px;"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Profit Margin by Market</h3>
+      <p class="note">EMEA is the weakest large market</p>
+      <div id="chart-market" style="height:280px;"></div>
+    </div>
+
+    <div class="chart-card full">
+      <h3>Profit Margin by Sub-Category</h3>
+      <p class="note">Tables is the only sub-category losing money overall — hover any bar for exact sales &amp; margin</p>
+      <div id="chart-subcat" style="height:420px;"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Revenue Share by Customer Segment (RFM)</h3>
+      <p class="note">Champions (21.8% of customers) drive 43.3% of revenue</p>
+      <div id="chart-rfm" style="height:340px;"></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Customer Count by Segment (RFM)</h3>
+      <p class="note">"Lost" is the largest group by count but the smallest by value</p>
+      <div id="chart-rfm-count" style="height:340px;"></div>
+    </div>
+  </div>
+</main>
+
+<footer>Built with Python · Pandas · Plotly.js &nbsp;|&nbsp; Prepared by Amin Reda</footer>
+
+<script>
+const isDark = () => {
+  const t = document.documentElement.getAttribute('data-theme');
+  if (t === 'dark') return true;
+  if (t === 'light') return false;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+};
+const NAVY = () => isDark() ? '#CADCFC' : '#1E2761';
+const GRAY = () => isDark() ? '#A9ADC4' : '#5A5F73';
+const PAPER = () => isDark() ? '#1B1E3D' : '#FFFFFF';
+const RED = '#D62728', GREEN = '#2CA096', ICE = '#7C93C9';
+
+const baseLayout = () => ({
+  paper_bgcolor: PAPER(), plot_bgcolor: PAPER(),
+  font: { color: NAVY(), family: 'Calibri, Arial, sans-serif', size: 11.5 },
+  margin: { t: 10, r: 16, b: 40, l: 55 },
+  xaxis: { gridcolor: isDark() ? '#2C3060' : '#EEF0F6', zeroline: false },
+  yaxis: { gridcolor: isDark() ? '#2C3060' : '#EEF0F6', zeroline: true, zerolinecolor: GRAY() },
+  showlegend: false,
+});
+const config = { responsive: true, displayModeBar: false };
+
+function colorByValue(vals, threshold) {
+  return vals.map(v => v < (threshold ?? 0) ? RED : GREEN);
+}
+
+// --- Discount vs Profit ---
+const discount = {"labels": ["0%", "0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-85%"], "profit": [61.0, 72.3, 27.6, -21.9, -48.9, -77.0, -85.5, -108.1, -131.1]};
+Plotly.newPlot('chart-discount', [{
+  x: discount.labels, y: discount.profit, type: 'bar',
+  marker: { color: colorByValue(discount.profit) },
+  hovertemplate: '%{x}<br>Avg Profit: $%{y}<extra></extra>',
+}], { ...baseLayout(), yaxis: { ...baseLayout().yaxis, title: 'Avg Profit ($)' } }, config);
+
+// --- Yearly Trend ---
+const yearly = {"years": [2011, 2012, 2013, 2014], "sales": [2259451.0, 2677439.0, 3405746.0, 4299866.0], "profit": [248941.0, 307415.0, 406935.0, 504166.0]};
+Plotly.newPlot('chart-trend', [
+  { x: yearly.years, y: yearly.sales, type: 'scatter', mode: 'lines+markers', name: 'Sales', line: { color: NAVY(), width: 3 } },
+  { x: yearly.years, y: yearly.profit, type: 'scatter', mode: 'lines+markers', name: 'Profit', line: { color: ICE, width: 3 } },
+], { ...baseLayout(), showlegend: true, legend: { orientation: 'h', y: 1.15 }, yaxis: { ...baseLayout().yaxis, title: 'USD' } }, config);
+
+// --- Category Margin ---
+const category = {"labels": ["Furniture", "Office Supplies", "Technology"], "margin": [6.94, 13.69, 13.99]};
+Plotly.newPlot('chart-category', [{
+  x: category.margin, y: category.labels, type: 'bar', orientation: 'h',
+  marker: { color: colorByValue(category.margin, 8) },
+  hovertemplate: '%{y}: %{x}%<extra></extra>',
+}], { ...baseLayout(), margin: { t: 10, r: 30, b: 30, l: 110 }, xaxis: { ...baseLayout().xaxis, title: 'Margin %' } }, config);
+
+// --- Market Margin ---
+const market = {"labels": ["EMEA", "LATAM", "Africa", "APAC", "US", "EU", "Canada"], "margin": [5.45, 10.24, 11.34, 12.16, 12.47, 12.69, 26.62]};
+Plotly.newPlot('chart-market', [{
+  x: market.margin, y: market.labels, type: 'bar', orientation: 'h',
+  marker: { color: colorByValue(market.margin, 7) },
+  hovertemplate: '%{y}: %{x}%<extra></extra>',
+}], { ...baseLayout(), margin: { t: 10, r: 30, b: 30, l: 70 }, xaxis: { ...baseLayout().xaxis, title: 'Margin %' } }, config);
+
+// --- Sub-Category Margin ---
+const subcat = {"labels": ["Tables", "Machines", "Supplies", "Chairs", "Storage", "Bookcases", "Furnishings", "Phones", "Fasteners", "Appliances", "Art", "Binders", "Copiers", "Accessories", "Envelopes", "Labels", "Paper"], "margin": [-8.46, 7.56, 9.29, 9.35, 9.62, 11.04, 12.18, 12.7, 13.85, 14.01, 15.58, 15.68, 17.13, 17.3, 17.32, 20.45, 24.24], "sales": [757042.0, 779060.0, 243074.0, 1501682.0, 1127086.0, 1466572.0, 385578.0, 1706824.0, 83242.0, 1011064.0, 372092.0, 461912.0, 1509436.0, 749237.0, 170904.0, 73404.0, 244292.0]};
+Plotly.newPlot('chart-subcat', [{
+  x: subcat.margin, y: subcat.labels, type: 'bar', orientation: 'h',
+  marker: { color: colorByValue(subcat.margin) },
+  customdata: subcat.sales,
+  hovertemplate: '%{y}<br>Margin: %{x}%<br>Sales: $%{customdata:,.0f}<extra></extra>',
+}], { ...baseLayout(), margin: { t: 10, r: 30, b: 30, l: 100 }, xaxis: { ...baseLayout().xaxis, title: 'Margin %' } }, config);
+
+// --- RFM Revenue Share ---
+const rfm = {"labels": ["Champions", "Loyal Customers", "At Risk (High Value)", "Hibernating", "Lost", "New Customers", "Need Attention"], "revenue_pct": [43.3, 31.9, 9.1, 8.1, 3.6, 2.1, 1.9], "customers": [347, 355, 77, 191, 367, 121, 132]};
+const rfmSorted = rfm.labels.map((l,i)=>({l, r: rfm.revenue_pct[i], c: rfm.customers[i]})).sort((a,b)=>a.r-b.r);
+Plotly.newPlot('chart-rfm', [{
+  x: rfmSorted.map(d=>d.r), y: rfmSorted.map(d=>d.l), type: 'bar', orientation: 'h',
+  marker: { color: rfmSorted.map(d => d.r > 25 ? NAVY() : ICE) },
+  hovertemplate: '%{y}: %{x}% of revenue<extra></extra>',
+}], { ...baseLayout(), margin: { t: 10, r: 30, b: 30, l: 140 }, xaxis: { ...baseLayout().xaxis, title: '% of Revenue' } }, config);
+
+// --- RFM Customer Count ---
+const rfmCountSorted = rfm.labels.map((l,i)=>({l, r: rfm.customers[i]})).sort((a,b)=>a.r-b.r);
+Plotly.newPlot('chart-rfm-count', [{
+  x: rfmCountSorted.map(d=>d.r), y: rfmCountSorted.map(d=>d.l), type: 'bar', orientation: 'h',
+  marker: { color: ICE },
+  hovertemplate: '%{y}: %{x} customers<extra></extra>',
+}], { ...baseLayout(), margin: { t: 10, r: 30, b: 30, l: 140 }, xaxis: { ...baseLayout().xaxis, title: 'Customers' } }, config);
+
+// Redraw on theme change to keep colors correct
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => location.reload());
+</script>
+
+</body>
+</html>
